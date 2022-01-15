@@ -20,16 +20,13 @@ byte broadcast[] = {192, 160, 10, 255};
 byte mac[] = {0x04, 0xE9, 0xE5, 0x00, 0x69, 0xEC};
 uint16_t universe = 1;
 
-uint8_t dmxFrame1 = 0;
-uint8_t dmxFrame2 = 0;
-uint8_t dmxFrame3 = 0;
-uint8_t dmxFrame4 = 0;
+uint8_t dmxData[4] = {0, 0, 0, 0};
 
 // it is critical that you use this pin number or other pin numbers using FastLED's Parallel Output procedure
 #define DATA_PIN  7
 
-// Teensy 4.0 Stuff ================
-#define NUM_LEDS_PER_STRIP 40
+// Teensy 4.1 Stuff ================
+#define NUM_LEDS_PER_STRIP 100
 #define NUM_STRIPS 1
 #define NUM_LEDS   NUM_LEDS_PER_STRIP
 CRGB leds[NUM_LEDS_PER_STRIP * NUM_STRIPS];
@@ -42,12 +39,13 @@ void setup()
   artnet.setBroadcast(broadcast);
 
   delay(1000);
-  // Teensy 4.0 Stuff ==============
+  // Teensy 4.1 Stuff ==============
   FastLED.addLeds<NUM_STRIPS, WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS_PER_STRIP);
 
-  FastLED.setBrightness(0);
-  FastLED.setMaxPowerInVoltsAndMilliamps(12, 1500);
-  set_max_power_indicator_LED(13);
+  FastLED.setBrightness(50);
+  //FastLED.setMaxPowerInVoltsAndMilliamps(12, 1500);
+  //set_max_power_indicator_LED(13);
+  FastLED.setMaxRefreshRate(1200);
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
 }
@@ -62,15 +60,19 @@ void loop()
 
   if ((r == ART_DMX) && (artnet.getUniverse() == universe))
   {
+    Serial.println("ArtNet!");
 
-    dmxFrame1 = artnet.getDmxFrame()[0];
-    dmxFrame2 = artnet.getDmxFrame()[1];
-    dmxFrame3 = artnet.getDmxFrame()[2];
-    dmxFrame4 = artnet.getDmxFrame()[3];
-    //Serial.print(dmxFrame1);
+    //dmxData[0] = artnet.getDmxFrame()[0];
+    dmxData[1] = artnet.getDmxFrame()[1];
+    dmxData[2] = artnet.getDmxFrame()[2];
+    dmxData[3] = artnet.getDmxFrame()[3];
 
-    FastLED.setBrightness(dmxFrame1);
-    fill_solid( leds, NUM_LEDS, CRGB(dmxFrame2, dmxFrame3, dmxFrame4));
+    //dmxData = {artnet.getDmxFrame()[0], artnet.getDmxFrame()[1], artnet.getDmxFrame()[2], artnet.getDmxFrame()[3], artnet.getDmxFrame()[4]};
+       //delay(2);
+
+    //FastLED.setBrightness(dmxData[0]);
+    fill_solid( leds, NUM_LEDS, CRGB(dmxData[1], dmxData[2], dmxData[3]));
+    delay(10);
     FastLED.show();
 
   }
